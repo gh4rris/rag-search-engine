@@ -4,10 +4,16 @@ import json
 RESULT_LIMIT = 5
 
 ROOT_PATH = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-DATA_PATH = os.path.join(ROOT_PATH, "data", "movies.json")
+DATA = os.path.join(ROOT_PATH, "data", "movies.json")
+STOP_WORDS = os.path.join(ROOT_PATH, "data", "stopwords.txt")
 
 
-def load_data():
-    with open(DATA_PATH, "r") as f:
+def load_data() -> list[dict]:
+    with open(DATA, "r") as f:
         movies = json.load(f)
-    return movies
+    return movies["movies"]
+
+
+def get_stop_words() -> list[str]:
+    with open(STOP_WORDS, "r") as f:
+        return f.read().splitlines()

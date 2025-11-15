@@ -19,7 +19,7 @@ def main() -> None:
             print(f"Searching for: {args.query}")
             results = search_movies(args.query)
             for i, result in enumerate(results):
-                print(f"{i + 1}: {result}")
+                print(f"{i + 1}: {result}\n")
         case _:
             parser.print_help()
 

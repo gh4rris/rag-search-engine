@@ -1,12 +1,14 @@
-import string
+from lib.search_utils import RESULT_LIMIT, load_data, get_stop_words
 
-from lib.search_utils import RESULT_LIMIT, load_data
+import string
+from nltk.stem import PorterStemmer
+
 
 
 def search_movies(query: str, limit: int=RESULT_LIMIT) -> list[dict]:
     movies = load_data()
     results = []
-    for movie in movies["movies"]:
+    for movie in movies:
         tokenized_query = tokenize_text(query)
         tokenized_title = tokenize_text(movie["title"])
         if has_matching_token(tokenized_query, tokenized_title):
@@ -24,7 +26,10 @@ def has_matching_token(tokenized_query: list[str], tokenized_title: list[str]) -
     return False
 
 
-def tokenize_text(text: str) -> str:
+def tokenize_text(text: str) -> list[str]:
     text = text.lower()
     text = text.translate(str.maketrans("", "", string.punctuation))
-    return text.split()
+    stop_words = get_stop_words()
+    filtered_words = [word for word in text.split() if word not in stop_words]
+    stemmer = PorterStemmer()
+    return [stemmer.stem(token) for token in filtered_words]
