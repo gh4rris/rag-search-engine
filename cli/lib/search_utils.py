@@ -1,5 +1,7 @@
 import os
 import json
+import string
+from nltk.stem import PorterStemmer
 
 RESULT_LIMIT = 5
 
@@ -9,7 +11,7 @@ STOP_WORDS = os.path.join(ROOT_PATH, "data", "stopwords.txt")
 CACHE = os.path.join(ROOT_PATH, "cache")
 
 
-def load_data() -> list[dict]:
+def load_movies() -> list[dict]:
     with open(DATA, "r") as f:
         movies = json.load(f)
     return movies["movies"]
@@ -18,3 +20,12 @@ def load_data() -> list[dict]:
 def get_stop_words() -> list[str]:
     with open(STOP_WORDS, "r") as f:
         return f.read().splitlines()
+    
+    
+def tokenize_text(text: str) -> list[str]:
+    text = text.lower()
+    text = text.translate(str.maketrans("", "", string.punctuation))
+    stop_words = get_stop_words()
+    filtered_words = [word for word in text.split() if word not in stop_words]
+    stemmer = PorterStemmer()
+    return [stemmer.stem(token) for token in filtered_words]
