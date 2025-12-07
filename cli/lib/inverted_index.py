@@ -39,6 +39,13 @@ class InvertedIndex:
         matches = self.index[token[0]]
         return math.log((len(self.docmap) + 1) / (len(matches) + 1))
     
+    def get_bm25_idf(self, term: str) -> float:
+        token = tokenize_text(term)
+        if len(token) != 1:
+            raise ValueError("Term must be a single token")
+        matches = self.index[token[0]]
+        return math.log((len(self.docmap) - len(matches) + 0.5) / (len(matches) + 0.5) + 1)
+    
     def build(self) -> None:
         movies = load_movies()
         for movie in movies:
@@ -77,3 +84,15 @@ def idf_command(term: str) -> float:
     movies = InvertedIndex()
     movies.load()
     return movies.get_idf(term)
+
+def tfidf_command(doc_id: int, term: str) -> float:
+    movies = InvertedIndex()
+    movies.load()
+    tf = movies.get_tf(doc_id, term)
+    idf = movies.get_idf(term)
+    return tf * idf
+
+def bm25_idf_command(term: str) -> float:
+    movies = InvertedIndex()
+    movies.load()
+    return movies.get_bm25_idf(term)
