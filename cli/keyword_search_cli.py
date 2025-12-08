@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
 from lib.keyword_search import search_movies
-from lib.inverted_index import build_command, tf_command, idf_command, tfidf_command, bm25_idf_command
+from lib.inverted_index import build_command, tf_command, idf_command, tfidf_command, bm25_tf_command, bm25_idf_command
+from lib.search_utils import BM25_K1, BM25_B
 
 import argparse
 
@@ -18,7 +19,7 @@ def main() -> None:
 
     tf_parser = subparsers.add_parser("tf", help="Get the term frequency for given term and movie")
     tf_parser.add_argument("id", type=int, help="Movie ID")
-    tf_parser.add_argument("term", type=str, help="Term to search")
+    tf_parser.add_argument("term", type=str, help="Term to get TF score for")
 
     idf_parser = subparsers.add_parser("idf", help="Get the IDF score for a given term")
     idf_parser.add_argument("term", type=str, help="Term to get IDF score for")
@@ -26,6 +27,12 @@ def main() -> None:
     tfidf_parser = subparsers.add_parser("tfidf", help="Get the TF-IDF score for a given term and movie")
     tfidf_parser.add_argument("id", type=int, help="Movie ID")
     tfidf_parser.add_argument("term", type=str, help="Term to get TF-IDF for")
+
+    bm25_tf_parser = subparsers.add_parser("bm25tf", help="Get the BM25 term frequency for given term and movie")
+    bm25_tf_parser.add_argument("id", type=int, help="Movie ID")
+    bm25_tf_parser.add_argument("term", type=str, help="Term to get BM25 TF score for")
+    bm25_tf_parser.add_argument("k1", type=float, nargs="?", default=BM25_K1, help="Tunable BM25 k1 parameter")
+    bm25_tf_parser.add_argument("b", type=float, nargs="?", default=BM25_B, help="Tunable BM25 b parameter")
 
     bm25_idf_parser = subparsers.add_parser("bm25idf", help="Get BM25 IDF score for a given term")
     bm25_idf_parser.add_argument("term", type=str, help="Term to get BM25 IDF score for")
@@ -52,6 +59,9 @@ def main() -> None:
         case "tfidf":
             tfidf = tfidf_command(args.id, args.term)
             print(f"TF-IDF score of '{args.term}' in document '{args.id}': {tfidf:.2f}")
+        case "bm25tf":
+            bm25tf = bm25_tf_command(args.id, args.term, args.k1, args.b)
+            print(f"BM25 TF score of '{args.term}' in document '{args.id}': {bm25tf:.2f}")
         case "bm25idf":
             bm25idf = bm25_idf_command(args.term)
             print(f"BM25 IDF score of '{args.term}': {bm25idf:.2f}")
