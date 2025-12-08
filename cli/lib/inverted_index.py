@@ -1,4 +1,4 @@
-from lib.search_utils import load_movies, tokenize_text, CACHE
+from lib.search_utils import load_movies, tokenize_text, CACHE, BM25_K1, BM25_B
 
 import os
 import pickle
@@ -20,8 +20,7 @@ class InvertedIndex:
     def __add_document(self, doc_id: int, text: str) -> None:
         tokenized_text = tokenize_text(text)
         for token in set(tokenized_text):
-            if token in self.index:
-                self.index[token].add(doc_id)
+            self.index[token].add(doc_id)
         self.term_frequencies[doc_id].update(tokenized_text)
         self.doc_lengths[doc_id] = len(tokenized_text)
 
@@ -51,8 +50,8 @@ class InvertedIndex:
         matches = self.index[token[0]]
         return math.log((len(self.docmap) + 1) / (len(matches) + 1))
     
-    def get_bm25_tf(self, doc_id: int, term: str, k1: float, b: float) -> float:
-        doc_length = self.doc_lengths[doc_id]
+    def get_bm25_tf(self, doc_id: int, term: str, k1: float=BM25_K1, b: float=BM25_B) -> float:
+        doc_length = self.doc_lengths.get(doc_id, 0)
         avg_doc_length = self.__get_avg_doc_length()
         length_norm = (1 - b) + (b * (doc_length / avg_doc_length)) if avg_doc_length > 0 else 1
         tf = self.get_tf(doc_id, term)
@@ -64,6 +63,26 @@ class InvertedIndex:
             raise ValueError("Term must be a single token")
         matches = self.index[token[0]]
         return math.log((len(self.docmap) - len(matches) + 0.5) / (len(matches) + 0.5) + 1)
+    
+    def bm25(self, doc_id: int, term: str) -> float:
+        tf = self.get_bm25_tf(doc_id, term)
+        idf = self.get_bm25_idf(term)
+        return tf * idf
+    
+    def bm25_search(self, query: str, limit: int) -> list[tuple]:
+        tokenized_query = tokenize_text(query)
+        bm25_scores = {}
+        for id in self.docmap:
+            score = 0
+            for token in tokenized_query:
+                score += self.bm25(id, token)
+            bm25_scores[id] = score
+        sorted_scores = sorted(bm25_scores.items(), key=lambda x: x[1], reverse=True)
+        results = []
+        for id, score in sorted_scores[:limit]:
+            results.append((self.docmap[id], score))
+        return results
+
     
     def build(self) -> None:
         movies = load_movies()
@@ -124,3 +143,8 @@ def bm25_idf_command(term: str) -> float:
     movies = InvertedIndex()
     movies.load()
     return movies.get_bm25_idf(term)
+
+def bm25_search(query: str, limit: int) -> list[tuple]:
+    movies = InvertedIndex()
+    movies.load()
+    return movies.bm25_search(query, limit)

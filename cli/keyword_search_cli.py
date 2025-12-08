@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 from lib.keyword_search import search_movies
-from lib.inverted_index import build_command, tf_command, idf_command, tfidf_command, bm25_tf_command, bm25_idf_command
-from lib.search_utils import BM25_K1, BM25_B
+from lib.inverted_index import build_command, tf_command, idf_command, tfidf_command, bm25_tf_command, bm25_idf_command, bm25_search
+from lib.search_utils import BM25_K1, BM25_B, RESULT_LIMIT
 
 import argparse
 
@@ -37,6 +37,10 @@ def main() -> None:
     bm25_idf_parser = subparsers.add_parser("bm25idf", help="Get BM25 IDF score for a given term")
     bm25_idf_parser.add_argument("term", type=str, help="Term to get BM25 IDF score for")
 
+    bm25_search_parser = subparsers.add_parser("bm25search", help="Search movies using full BM25 scoring")
+    bm25_search_parser.add_argument("query", type=str, help="Search query")
+    bm25_search_parser.add_argument("limit", type=int, nargs="?", default=RESULT_LIMIT, help="Set the result limit")
+
     args = parser.parse_args()
 
     match args.command:
@@ -65,6 +69,11 @@ def main() -> None:
         case "bm25idf":
             bm25idf = bm25_idf_command(args.term)
             print(f"BM25 IDF score of '{args.term}': {bm25idf:.2f}")
+        case "bm25search":
+            print(f"Searching for: {args.query}")
+            results = bm25_search(args.query, args.limit)
+            for movie, score in results:
+                print(f"({movie["id"]}) {movie["title"]} - Score: {score:.2f}")
         case _:
             parser.print_help()
 
