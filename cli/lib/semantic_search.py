@@ -109,10 +109,13 @@ def search_command(query: str, limit: int) -> None:
         print(f"{i}. {result["title"]} ({result["score"]:.2f})")
         print(f"{result["description"]}\n")
 
-def chunk_text(text: str, chunk_size: int) -> None:
+def chunk_text(text: str, chunk_size: int, overlap: int) -> None:
     words = text.split()
     chunk = 1
     for i in range(0, len(words), chunk_size):
-        print(f"{chunk}. {" ".join(words[i:i+chunk_size])}")
+        if overlap > i:
+            print(f"{chunk}. {" ".join(words[i:i+chunk_size])}")
+        else:
+            print(f"{chunk}. {" ".join(words[i-overlap:i+chunk_size-overlap])}")
         chunk += 1
 

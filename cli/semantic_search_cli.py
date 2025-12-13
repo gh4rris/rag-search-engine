@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from lib.semantic_search import verify_model, embed_text, verify_embeddings, embed_query_text, search_command, chunk_text
-from lib.search_utils import RESULT_LIMIT, CHUNK_SIZE
+from lib.search_utils import RESULT_LIMIT, CHUNK_SIZE, OVERLAP
 
 import argparse
 
@@ -26,6 +26,7 @@ def main():
     chunk_parser = subparsers.add_parser("chunk", help="Split long text into smaller pieces for embedding")
     chunk_parser.add_argument("text", help="text to chunk")
     chunk_parser.add_argument("--chunk-size", type=int, nargs="?", default=CHUNK_SIZE, help="chunk size to split text")
+    chunk_parser.add_argument("--overlap", type=int, nargs="?", default=OVERLAP, help="Previous chunks share the last overlap words with the following chunk")
 
     args = parser.parse_args()
 
@@ -46,7 +47,7 @@ def main():
             search_command(args.query, args.limit)
         case "chunk":
             print(f"Chunking {len(args.text)} characters")
-            chunk_text(args.text, args.chunk_size)
+            chunk_text(args.text, args.chunk_size, args.overlap)
         case _:
             parser.print_help()
 

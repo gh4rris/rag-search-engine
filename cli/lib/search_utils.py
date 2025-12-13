@@ -7,6 +7,7 @@ RESULT_LIMIT = 5
 BM25_K1 = 1.5
 BM25_B = 0.75
 CHUNK_SIZE = 200
+OVERLAP = 0
 
 ROOT_PATH = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 DATA = os.path.join(ROOT_PATH, "data", "movies.json")
