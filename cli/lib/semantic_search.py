@@ -2,6 +2,7 @@ from lib.search_utils import CACHE, load_movies
 
 import numpy as np
 import os
+import re
 from numpy import ndarray
 from sentence_transformers import SentenceTransformer
 
@@ -111,11 +112,26 @@ def search_command(query: str, limit: int) -> None:
 
 def chunk_text(text: str, chunk_size: int, overlap: int) -> None:
     words = text.split()
-    chunk = 1
-    for i in range(0, len(words), chunk_size):
-        if overlap > i:
-            print(f"{chunk}. {" ".join(words[i:i+chunk_size])}")
-        else:
-            print(f"{chunk}. {" ".join(words[i-overlap:i+chunk_size-overlap])}")
-        chunk += 1
+    chunks = []
+    i = 0
+    while i < len(words):
+        chunk_words = words[i:i + chunk_size]
+        if chunks and len(chunk_words) <= overlap:
+            break
+        chunks.append(" ".join(chunk_words))
+        i += chunk_size - overlap
+    for i, chunk in enumerate(chunks, 1):
+        print(f"{i}. {chunk}")
 
+def semantic_chunk_text(text: str, chunk_size: int, overlap: int) -> None:
+    sentences = re.split(r"(?<=[.!?])\s+", text)
+    chunks = []
+    i = 0
+    while i < len(sentences):
+        chunk_sentence = sentences[i: i + chunk_size]
+        if chunks and len(chunk_sentence) <= overlap:
+            break
+        chunks.append(" ".join(chunk_sentence))
+        i += chunk_size - overlap
+    for i, chunk in enumerate(chunks, 1):
+        print(f"{i}. {chunk}")
