@@ -14,6 +14,7 @@ SCORE_PRECISION = 3
 DOCUMENT_PREVIEW_LENGTH = 100
 ALPHA = 0.5
 LIMIT_MULTIPLIER = 500
+RRF_K = 60
 MODEL_NAME = "all-MiniLM-L6-v2"
 
 ROOT_PATH = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
