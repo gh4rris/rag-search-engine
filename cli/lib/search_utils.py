@@ -7,8 +7,12 @@ RESULT_LIMIT = 5
 BM25_K1 = 1.5
 BM25_B = 0.75
 CHUNK_SIZE = 200
-OVERLAP = 0
+WORD_OVERLAP = 0
+SENTENCE_OVERLAP = 1
 MAX_CHUNK_SIZE = 4
+SCORE_PRECISION = 3
+DOCUMENT_PREVIEW_LENGTH = 100
+MODEL_NAME = "all-MiniLM-L6-v2"
 
 ROOT_PATH = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 DATA = os.path.join(ROOT_PATH, "data", "movies.json")

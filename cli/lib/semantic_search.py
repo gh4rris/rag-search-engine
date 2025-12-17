@@ -1,23 +1,23 @@
-from lib.search_utils import CACHE, load_movies
+from lib.search_utils import MODEL_NAME, CACHE, MAX_CHUNK_SIZE, SENTENCE_OVERLAP, load_movies
 
-import numpy as np
 import os
 import re
+import numpy as np
 from numpy import ndarray
 from sentence_transformers import SentenceTransformer
 
 
 
 class SemanticSearch:
-    def __init__(self):
-        self.model = SentenceTransformer("all-MiniLM-L6-v2")
+    def __init__(self, model_name: str=MODEL_NAME) -> None:
+        self.model = SentenceTransformer(model_name)
         self.embeddings: ndarray[ndarray] | None = None # array of embedded documents
         self.documents: list[dict] | None = None # list of documents
         self.docmap: dict[int, dict] = {} # mapping document IDs to document objects
         self.embeddings_path = os.path.join(CACHE, "movie_embeddings.npy")
 
     def generate_embedding(self, text: str) -> ndarray:
-        if len(text.split()) == 0:
+        if not text.strip():
             raise ValueError("Text empty or contains only whitespace")
         return self.model.encode([text])[0]
     
@@ -123,7 +123,7 @@ def chunk_text(text: str, chunk_size: int, overlap: int) -> None:
     for i, chunk in enumerate(chunks, 1):
         print(f"{i}. {chunk}")
 
-def semantic_chunk_text(text: str, chunk_size: int, overlap: int) -> None:
+def semantic_chunk(text: str, chunk_size: int=MAX_CHUNK_SIZE, overlap: int=SENTENCE_OVERLAP) -> list[str]:
     sentences = re.split(r"(?<=[.!?])\s+", text)
     chunks = []
     i = 0
@@ -133,5 +133,9 @@ def semantic_chunk_text(text: str, chunk_size: int, overlap: int) -> None:
             break
         chunks.append(" ".join(chunk_sentence))
         i += chunk_size - overlap
+    return chunks
+
+def semantic_chunk_text(text: str, chunk_size: int, overlap: int) -> None:
+    chunks = semantic_chunk(text, chunk_size, overlap)
     for i, chunk in enumerate(chunks, 1):
         print(f"{i}. {chunk}")

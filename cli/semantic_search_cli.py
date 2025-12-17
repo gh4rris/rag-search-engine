@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
 from lib.semantic_search import verify_model, embed_text, verify_embeddings, embed_query_text, search_command, chunk_text, semantic_chunk_text
-from lib.search_utils import RESULT_LIMIT, CHUNK_SIZE, OVERLAP, MAX_CHUNK_SIZE
+from lib.chunked_semantic_search import embed_chunks, search_chunked_command
+from lib.search_utils import RESULT_LIMIT, CHUNK_SIZE, WORD_OVERLAP, SENTENCE_OVERLAP, MAX_CHUNK_SIZE
 
 import argparse
 
@@ -26,12 +27,18 @@ def main():
     chunk_parser = subparsers.add_parser("chunk", help="Split long text into smaller pieces for embedding")
     chunk_parser.add_argument("text", help="text to chunk")
     chunk_parser.add_argument("--chunk-size", type=int, nargs="?", default=CHUNK_SIZE, help="chunk size to split text")
-    chunk_parser.add_argument("--overlap", type=int, nargs="?", default=OVERLAP, help="Previous chunks share the last overlap words with the following chunk")
+    chunk_parser.add_argument("--overlap", type=int, nargs="?", default=WORD_OVERLAP, help="Previous chunks share the last overlap words with the following chunk")
 
     semantic_chunk_parser = subparsers.add_parser("semantic_chunk", help="Splits text on sentence boundaries for embedding")
     semantic_chunk_parser.add_argument("text", help="text to chunk")
     semantic_chunk_parser.add_argument("--max-chunk-size", type=int, nargs="?", default=MAX_CHUNK_SIZE, help="Maximum chunk size")
-    semantic_chunk_parser.add_argument("--overlap", type=int, nargs="?", default=OVERLAP, help="Previous chunks share the last overlap sentences with the following chunk")
+    semantic_chunk_parser.add_argument("--overlap", type=int, nargs="?", default=SENTENCE_OVERLAP, help="Previous chunks share the last overlap sentences with the following chunk")
+
+    subparsers.add_parser("embed_chunks", help="Load or build chunk embeddings")
+
+    search_chunked = subparsers.add_parser("search_chunked", help="Search movies using chunked semantic search")
+    search_chunked.add_argument("query", type=str, help="Search query")
+    search_chunked.add_argument("--limit", type=int, nargs="?", default=RESULT_LIMIT, help="Set the result limit")
 
     args = parser.parse_args()
 
@@ -56,6 +63,13 @@ def main():
         case "semantic_chunk":
             print(f"Semantically chunking {len(args.text)} characters")
             semantic_chunk_text(args.text, args.max_chunk_size, args.overlap)
+        case "embed_chunks":
+            embed_chunks()
+        case "search_chunked":
+            results = search_chunked_command(args.query, args.limit)
+            for i, result in enumerate(results, 1):
+                print(f"\n{i}. {result["title"]} (score: {result["score"]:.4f})")
+                print(f"    {result["document"]}...")
         case _:
             parser.print_help()
 
