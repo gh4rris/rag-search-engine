@@ -93,8 +93,7 @@ class ChunkedSemanticSearch(SemanticSearch):
                     "id": document["id"],
                     "title": document["title"],
                     "document": document["description"][:DOCUMENT_PREVIEW_LENGTH],
-                    "score": round(score, SCORE_PRECISION),
-                    "metadata": {}
+                    "score": round(score, SCORE_PRECISION)
                 }
             )
         return results

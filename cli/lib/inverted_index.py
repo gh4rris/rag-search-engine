@@ -1,4 +1,4 @@
-from lib.search_utils import load_movies, tokenize_text, CACHE, BM25_K1, BM25_B
+from lib.search_utils import load_movies, tokenize_text, CACHE, BM25_K1, BM25_B, DOCUMENT_PREVIEW_LENGTH, SCORE_PRECISION
 
 import os
 import pickle
@@ -69,7 +69,7 @@ class InvertedIndex:
         idf = self.get_bm25_idf(term)
         return tf * idf
     
-    def bm25_search(self, query: str, limit: int) -> list[tuple]:
+    def bm25_search(self, query: str, limit: int) -> list[dict]:
         tokenized_query = tokenize_text(query)
         bm25_scores = {}
         for id in self.docmap:
@@ -80,7 +80,15 @@ class InvertedIndex:
         sorted_scores = sorted(bm25_scores.items(), key=lambda x: x[1], reverse=True)
         results = []
         for id, score in sorted_scores[:limit]:
-            results.append((self.docmap[id], score))
+            document = self.docmap[id]
+            results.append(
+                {
+                    "id": document["id"],
+                    "title": document["title"],
+                    "document": document["description"][:DOCUMENT_PREVIEW_LENGTH],
+                    "score": round(score, SCORE_PRECISION)
+                }
+            )
         return results
 
     
