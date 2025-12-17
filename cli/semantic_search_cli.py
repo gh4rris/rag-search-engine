@@ -6,7 +6,8 @@ from lib.search_utils import RESULT_LIMIT, CHUNK_SIZE, WORD_OVERLAP, SENTENCE_OV
 
 import argparse
 
-def main():
+
+def main() -> None:
     parser = argparse.ArgumentParser(description="Semantic search CLI")
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 

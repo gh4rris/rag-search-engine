@@ -7,7 +7,6 @@ from lib.search_utils import BM25_K1, BM25_B, RESULT_LIMIT
 import argparse
 
 
-
 def main() -> None:
     parser = argparse.ArgumentParser(description="Keyword Search CLI")
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
