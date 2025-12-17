@@ -123,8 +123,17 @@ def chunk_text(text: str, chunk_size: int, overlap: int) -> None:
     for i, chunk in enumerate(chunks, 1):
         print(f"{i}. {chunk}")
 
+def split_sentences(text: str) -> list[str]:
+    stripped_text = text.strip()
+    if not stripped_text:
+        return []
+    sentences = re.split(r"(?<=[.!?])\s+", stripped_text)
+    if len(sentences) == 1 and not stripped_text.endswith((".", "!", "?")):
+        sentences = [stripped_text]
+    return [sentence.strip() for sentence in sentences if sentence.strip()]
+
 def semantic_chunk(text: str, chunk_size: int=MAX_CHUNK_SIZE, overlap: int=SENTENCE_OVERLAP) -> list[str]:
-    sentences = re.split(r"(?<=[.!?])\s+", text)
+    sentences = split_sentences(text)
     chunks = []
     i = 0
     while i < len(sentences):
