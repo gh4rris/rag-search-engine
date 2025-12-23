@@ -1,6 +1,7 @@
 from lib.inverted_index import InvertedIndex
 from lib.chunked_semantic_search import ChunkedSemanticSearch
 from lib.search_utils import LIMIT_MULTIPLIER, load_movies
+from lib.query_enhancement import enhance_query
 
 import os
 
@@ -120,7 +121,7 @@ def combine_rrf(bm25_results: list[dict], semantic_results: list[dict], k: int) 
             "document": doc["document"],
             "bm25_rank": i,
             "semantic_rank": None,
-            "rrf_score": None
+            "rrf_score": 0
         }
     
     for i, doc in enumerate(semantic_results, 1):
@@ -132,7 +133,7 @@ def combine_rrf(bm25_results: list[dict], semantic_results: list[dict], k: int) 
                 "document": doc["document"],
                 "bm25_rank": None,
                 "semantic_rank": i,
-                "rrf_score": None
+                "rrf_score": 0
             }
         else:
             document_ranks[doc_id]["semantic_rank"] = i
@@ -148,7 +149,15 @@ def weighted_command(query: str, alpha: float, limit: int) -> list[dict]:
     hybrid_search = HybridSearch(movies)
     return hybrid_search.weighted_search(query, alpha, limit)
 
-def rrf_command(query: str, k: int, limit: int) -> list[dict]:
+def rrf_command(query: str, k: int, enhance: str, limit: int) -> list[dict]:
+    enhanced_query = None
+    if enhance:
+        enhanced_query = enhance_query(query, method=enhance)
     movies = load_movies()
     hybrid_search = HybridSearch(movies)
-    return hybrid_search.rrf_search(query, k, limit)
+    results = hybrid_search.rrf_search(query, k, limit)
+
+    return {
+        "enhanced_query": enhanced_query,
+        "results": results
+    }
