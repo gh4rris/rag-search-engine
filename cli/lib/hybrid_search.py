@@ -1,10 +1,11 @@
 from lib.inverted_index import InvertedIndex
 from lib.chunked_semantic_search import ChunkedSemanticSearch
-from lib.search_utils import LIMIT_MULTIPLIER, SEARCH_MULTIPLIER, load_movies
+from lib.search_utils import LIMIT_MULTIPLIER, SEARCH_MULTIPLIER, RESULT_LIMIT, load_movies
 from lib.query_enhancement import enhance_query
 from lib.reranking import rerank_results
 
 import os
+from typing import Optional
 
 
 class HybridSearch:
@@ -44,7 +45,7 @@ class HybridSearch:
             )
         return results
     
-    def rrf_search(self, query:str, k: int, rerank_method: str, limit: int) -> list[dict]:
+    def rrf_search(self, query:str, k: int, rerank_method: Optional[str]=None, limit: int=RESULT_LIMIT) -> list[dict]:
         bm25_results = self._bm25_search(query, limit * LIMIT_MULTIPLIER)
         semantic_results = self.semantic_search.search_chunks(query, limit * LIMIT_MULTIPLIER)
         document_ranks = combine_rrf(bm25_results, semantic_results, k)
@@ -151,7 +152,7 @@ def weighted_command(query: str, alpha: float, limit: int) -> list[dict]:
     hybrid_search = HybridSearch(movies)
     return hybrid_search.weighted_search(query, alpha, limit)
 
-def rrf_command(query: str, k: int, enhance: str, rerank_method: str, limit: int) -> list[dict]:
+def rrf_command(query: str, k: int, enhance: Optional[str]=None, rerank_method: Optional[str]=None, limit: int=RESULT_LIMIT) -> list[dict]:
     movies = load_movies()
     hybrid_search = HybridSearch(movies)
     

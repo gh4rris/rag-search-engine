@@ -23,7 +23,7 @@ def main() -> None:
     rrf_search_parser.add_argument("-k", type=int, nargs="?", default=RRF_K, help="K parameter")
     rrf_search_parser.add_argument("--limit", type=int, nargs="?", default=RESULT_LIMIT, help="Set the result limit")
     rrf_search_parser.add_argument("--enhance", type=str, choices=["spell", "rewrite", "expand"], help="Query enhancement method")
-    rrf_search_parser.add_argument("--rerank-method", type=str, choices=["individual", "batch"], help="Reranking method")
+    rrf_search_parser.add_argument("--rerank-method", type=str, choices=["individual", "batch", "cross_encoder"], help="Reranking method")
 
     args = parser.parse_args()
 
@@ -47,6 +47,8 @@ def main() -> None:
                 print(f"{i}. {result["title"]}")
                 if result.get("batch_rank"):
                     print(f"Rerank Rank: {result["batch_rank"]}")
+                if result.get("cross_encoder_score"):
+                    print(f"Cross Encoder Score: {result["cross_encoder_score"]:.3f}")
                 print(f"RRF Score: {result["rrf_score"]:.3f}")
                 print(f"BM25 Rank: {result["bm25_rank"]}, Semantic Rank: {result["semantic_rank"]}")
                 print(f"{result["document"]}...\n")

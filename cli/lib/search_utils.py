@@ -21,6 +21,7 @@ SEARCH_MULTIPLIER = 5
 ROOT_PATH = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 DATA = os.path.join(ROOT_PATH, "data", "movies.json")
 STOP_WORDS = os.path.join(ROOT_PATH, "data", "stopwords.txt")
+GOLDEN_DATASET = os.path.join(ROOT_PATH, "data", "golden_dataset.json")
 CACHE = os.path.join(ROOT_PATH, "cache")
 
 
@@ -29,6 +30,10 @@ def load_movies() -> list[dict]:
         movies = json.load(f)
     return movies["movies"]
 
+def load_golden_dataset() -> list[dict]:
+    with open(GOLDEN_DATASET, "r") as f:
+        golden_dataset = json.load(f)
+    return golden_dataset["test_cases"]
 
 def get_stop_words() -> list[str]:
     with open(STOP_WORDS, "r") as f:

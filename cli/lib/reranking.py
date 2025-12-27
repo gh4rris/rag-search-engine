@@ -3,6 +3,7 @@ import time
 import json
 from dotenv import load_dotenv
 from google import genai
+from sentence_transformers import CrossEncoder
 
 
 load_dotenv()
@@ -69,11 +70,24 @@ def rerank_batch(query: str, documents: list[dict]) -> list[dict]:
             reranked.append({**doc_map[id], "batch_rank": rank})
     return reranked
 
+def rerank_cross_encoder(query: str, documents: list[dict]) -> list[dict]:
+    pairs = [[query, f"{doc.get("title", "")} - {doc.get("document", "")}"] for doc in documents]
+    cross_encoder = CrossEncoder("cross-encoder/ms-marco-TinyBERT-L2-v2")
+    scores = cross_encoder.predict(pairs)
+    scored_docs = []
+    for doc, score in zip(documents, scores):
+        scored_docs.append({**doc, "cross_encoder_score": score})
+    scored_docs.sort(key=lambda x: x["cross_encoder_score"], reverse=True)
+    return scored_docs
+
+
 def rerank_results(query: str, rerank_method: str, documents: list[dict]) -> list[dict]:
     match rerank_method:
         case "individual":
             return rerank_individual(query, documents)
         case "batch":
             return rerank_batch(query, documents)
+        case "cross_encoder":
+            return rerank_cross_encoder(query, documents)
         case _:
             return documents
