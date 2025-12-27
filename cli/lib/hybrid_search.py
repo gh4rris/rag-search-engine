@@ -1,7 +1,8 @@
 from lib.inverted_index import InvertedIndex
 from lib.chunked_semantic_search import ChunkedSemanticSearch
-from lib.search_utils import LIMIT_MULTIPLIER, load_movies
+from lib.search_utils import LIMIT_MULTIPLIER, SEARCH_MULTIPLIER, load_movies
 from lib.query_enhancement import enhance_query
+from lib.reranking import rerank_results
 
 import os
 
@@ -28,7 +29,7 @@ class HybridSearch:
         semantic_normalized = normalize_results(semantic_results)
         document_scores = combine_scores(bm25_normalized, semantic_normalized, alpha)
         sorted_docs = sorted(document_scores.items(), key=lambda x: x[1]["hybrid_score"], reverse=True)
-
+        
         results = []
         for id, doc in sorted_docs[:limit]:
             results.append(
@@ -43,14 +44,15 @@ class HybridSearch:
             )
         return results
     
-    def rrf_search(self, query:str, k: int, limit: int) -> list[dict]:
+    def rrf_search(self, query:str, k: int, rerank_method: str, limit: int) -> list[dict]:
         bm25_results = self._bm25_search(query, limit * LIMIT_MULTIPLIER)
         semantic_results = self.semantic_search.search_chunks(query, limit * LIMIT_MULTIPLIER)
         document_ranks = combine_rrf(bm25_results, semantic_results, k)
         sorted_docs = sorted(document_ranks.items(), key=lambda x: x[1]["rrf_score"], reverse=True)
+        search_limit = limit * SEARCH_MULTIPLIER if rerank_method else limit
 
         results = []
-        for id, doc in sorted_docs[:limit]:
+        for id, doc in sorted_docs[:search_limit]:
             results.append(
                 {
                     "id": id,
@@ -149,15 +151,21 @@ def weighted_command(query: str, alpha: float, limit: int) -> list[dict]:
     hybrid_search = HybridSearch(movies)
     return hybrid_search.weighted_search(query, alpha, limit)
 
-def rrf_command(query: str, k: int, enhance: str, limit: int) -> list[dict]:
+def rrf_command(query: str, k: int, enhance: str, rerank_method: str, limit: int) -> list[dict]:
+    movies = load_movies()
+    hybrid_search = HybridSearch(movies)
+    
     enhanced_query = None
     if enhance:
         enhanced_query = enhance_query(query, method=enhance)
-    movies = load_movies()
-    hybrid_search = HybridSearch(movies)
-    results = hybrid_search.rrf_search(query, k, limit)
+
+    results = hybrid_search.rrf_search(query, k, rerank_method, limit)
+    results.sort(key=lambda x: x["rrf_score"], reverse=True)
+    
+    if rerank_method:
+        results = rerank_results(query, rerank_method, results)
 
     return {
         "enhanced_query": enhanced_query,
-        "results": results
+        "results": results[:limit]
     }

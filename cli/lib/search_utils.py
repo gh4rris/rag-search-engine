@@ -16,6 +16,7 @@ ALPHA = 0.5
 LIMIT_MULTIPLIER = 500
 RRF_K = 60
 MODEL_NAME = "all-MiniLM-L6-v2"
+SEARCH_MULTIPLIER = 5
 
 ROOT_PATH = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 DATA = os.path.join(ROOT_PATH, "data", "movies.json")
