@@ -1,6 +1,6 @@
 #! usr/bin/env python3
-from lib.search_utils import RESULT_LIMIT, RRF_K, load_golden_dataset
-from lib.hybrid_search import rrf_command
+from lib.search_utils import RESULT_LIMIT
+from lib.evaluation import evaluate_command
 
 import argparse
 
@@ -9,19 +9,18 @@ def main() -> None:
     parser.add_argument("--limit", type=int, default=RESULT_LIMIT, help="Number of results to evaluate (k for precision@k, recall@k)")
 
     args = parser.parse_args()
-    limit = args.limit
+    results = evaluate_command(args.limit)
 
-    golden_dataset = load_golden_dataset()
-    for test_case in golden_dataset:
-        results = rrf_command(test_case["query"], RRF_K, limit=limit)
-        titles = [doc["title"] for doc in results["results"]]
-        relevant_docs = [doc for doc in titles if doc in test_case["relevant_docs"]]
-        precision = len(relevant_docs) / len(titles)
-        print(f"k={limit}")
-        print(f"- Query: {test_case["query"]}")
-        print(f"\t- Precision@{limit}: {precision:.4f}")
-        print(f"\t- Retrieved: {",".join(titles)}")
-        print(f"\t- Relevant: {",".join(relevant_docs)}")
+    print(f"k={args.limit}\n")
+    for query, result in results.items():
+        precision, recall = result["precision"], result["recall"]
+        f1score = (2 * (precision * recall)) / (precision + recall)
+        print(f"- Query: {query}")
+        print(f"\t- Precision@{args.limit}: {precision:.4f}")
+        print(f"\t- Recall@{args.limit}: {recall:.4f}")
+        print(f"\t- F1 Score: {f1score:.4f}")
+        print(f"\t- Retrieved: {", ".join(result["retrieved"])}")
+        print(f"\t- Relevant: {", ".join(result["relevant"])}")
 
 if __name__ == "__main__":
     main()

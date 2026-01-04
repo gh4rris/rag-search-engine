@@ -8,6 +8,7 @@ wheels/
 data/
 cache/
 .env
+.vscode
 
 # Virtual environments
 .venv
