@@ -1,3 +1,5 @@
+from lib.search_utils import LLM_MODEL
+
 import os
 from dotenv import load_dotenv
 from google import genai
@@ -7,7 +9,6 @@ from typing import Optional
 load_dotenv()
 api_key = os.getenv("GEMINI_API_KEY")
 client = genai.Client(api_key=api_key)
-model = "gemini-2.5-flash-lite"
 
 
 def spell_check(query: str) -> str:
@@ -21,7 +22,7 @@ def spell_check(query: str) -> str:
     """
 
     response = client.models.generate_content(
-        model=model,
+        model=LLM_MODEL,
         contents=prompt
     )
     corrected = (response.text or "").strip().strip('"')
@@ -50,7 +51,7 @@ def rewrite(query: str) -> str:
     """
 
     response = client.models.generate_content(
-        model=model,
+        model=LLM_MODEL,
         contents=prompt
     )
     rewritten = (response.text or "").strip().strip('"')
@@ -76,36 +77,11 @@ def expand(query: str) -> str:
     """
 
     response = client.models.generate_content(
-        model=model,
+        model=LLM_MODEL,
         contents=prompt
     )
     expansion = (response.text or "").strip().strip('"')
     return expansion if expansion else query
-
-def rerank_result(query: str, doc: dict) -> str:
-    prompt = f"""
-    Rate how well this movie matches the search query.
-
-    Query: "{query}"
-    Movie: {doc.get("title", "")} - {doc.get("document", "")}
-
-    Consider:
-    - Direct relevance to query
-    - User intent (what they're looking for)
-    - Content appropriateness
-
-    Rate 0-10 (10 = perfect match).
-    Give me ONLY the number in your response, no other text or explanation.
-
-    Score:
-    """
-
-    response = client.models.generate_content(
-        model=model,
-        contents=prompt
-    )
-    score = (response.text or "").strip().strip('"')
-    return score if score else str(doc["rrf_score"])
 
 def enhance_query(query: str, method: Optional[str]=None) -> str:
     match method:

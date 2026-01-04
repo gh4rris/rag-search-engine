@@ -152,7 +152,7 @@ def weighted_command(query: str, alpha: float, limit: int) -> list[dict]:
     hybrid_search = HybridSearch(movies)
     return hybrid_search.weighted_search(query, alpha, limit)
 
-def rrf_command(query: str, k: int, enhance: Optional[str]=None, rerank_method: Optional[str]=None, limit: int=RESULT_LIMIT) -> list[dict]:
+def rrf_command(query: str, k: int, enhance: Optional[str], rerank_method: Optional[str], limit: int) -> list[dict]:
     movies = load_movies()
     hybrid_search = HybridSearch(movies)
     
@@ -163,10 +163,10 @@ def rrf_command(query: str, k: int, enhance: Optional[str]=None, rerank_method: 
     results = hybrid_search.rrf_search(query, k, rerank_method, limit)
     results.sort(key=lambda x: x["rrf_score"], reverse=True)
     
-    if rerank_method:
-        results = rerank_results(query, rerank_method, results)
+    reranked_results = rerank_results(query, rerank_method, results)
 
     return {
         "enhanced_query": enhanced_query,
-        "results": results[:limit]
+        "original_results": results,
+        "reranked_results": reranked_results[:limit]
     }

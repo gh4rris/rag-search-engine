@@ -1,3 +1,5 @@
+from lib.search_utils import LLM_MODEL
+
 import os
 import time
 import json
@@ -9,7 +11,6 @@ from sentence_transformers import CrossEncoder
 load_dotenv()
 api_key = os.getenv("GEMINI_API_KEY")
 client = genai.Client(api_key=api_key)
-model = "gemini-2.5-flash"
 
 def rerank_individual(query: str, documents: list[dict]) -> list[dict]:
     scored_docs = []
@@ -32,7 +33,7 @@ def rerank_individual(query: str, documents: list[dict]) -> list[dict]:
         """
 
         response = client.models.generate_content(
-            model=model,
+            model=LLM_MODEL,
             contents=prompt
         )
         score = int((response.text or "").strip())
@@ -58,7 +59,7 @@ def rerank_batch(query: str, documents: list[dict]) -> list[dict]:
     [75, 12, 34, 2, 1]
     """
     response = client.models.generate_content(
-        model=model,
+        model=LLM_MODEL,
         contents=prompt
     )
     response_text = (response.text or "").strip()
