@@ -49,6 +49,36 @@ def generate_summarization(query: str, documents: list[dict]) -> str:
     )
     return (response.text or "").strip()
 
+def generate_citations(query: str, documents: list[dict]) -> str:
+    doc_list = [f"{i}. {doc.get("title", "")}: {doc.get("document", "")[:200]}" for i, doc in enumerate(documents, 1)]
+    prompt = f"""
+    Answer the question or provide information based on the provided documents.
+
+    This should be tailored to Hoopla users. Hoopla is a movie streaming service.
+
+    If not enough information is available to give a good answer, say so but give as good of an answer as you can while citing the sources you have.
+
+    Query: {query}
+
+    Documents:
+    {"\n".join(doc_list)}
+
+    Instructions:
+    - Provide a comprehensive answer that addresses the query
+    - Cite sources using [1], [2], etc. format when referencing information
+    - If sources disagree, mention the different viewpoints
+    - If the answer isn't in the documents, say "I don't have enough information"
+    - Be direct and informative
+
+    Answer:
+    """
+
+    response = client.models.generate_content(
+        model=LLM_MODEL,
+        contents=prompt
+    )
+    return (response.text or "").strip()
+
 def rag_command(query: str, limit: int) -> dict[str, Any]:
     movies = load_movies()
     hybrid_search = HybridSearch(movies)
@@ -59,7 +89,7 @@ def rag_command(query: str, limit: int) -> dict[str, Any]:
     response = generate_answer(query, results[:limit])
 
     return {
-        "results": results,
+        "results": results[:limit],
         "response": response
     }
 
@@ -73,6 +103,20 @@ def summarize_command(query: str, limit: int) -> dict[str, Any]:
     response = generate_summarization(query, results[:limit])
 
     return {
-        "results": results,
+        "results": results[:limit],
+        "response": response
+    }
+
+def citations_command(query: str, limit: int) -> dict[str, Any]:
+    movies = load_movies()
+    hybrid_search = HybridSearch(movies)
+
+    results = hybrid_search.rrf_search(query, RRF_K, limit)
+    results.sort(key=lambda x: x["rrf_score"], reverse=True)
+
+    response = generate_citations(query, results[:limit])
+
+    return {
+        "results": results[:limit],
         "response": response
     }
