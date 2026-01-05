@@ -1,4 +1,5 @@
-from lib.rag import rag_command
+from lib.rag import rag_command, summarize_command
+from lib.search_utils import RESULT_LIMIT
 
 import argparse
 
@@ -7,22 +8,33 @@ def main():
     parser = argparse.ArgumentParser(description="Retrieval Augmented Generation CLI")
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
-    rag_parser = subparsers.add_parser(
-        "rag", help="Perform RAG (search + generate answer)"
-    )
+    rag_parser = subparsers.add_parser("rag", help="Perform RAG (search + generate answer)")
     rag_parser.add_argument("query", type=str, help="Search query for RAG")
+    rag_parser.add_argument("--limit", type=int, nargs="?", default=RESULT_LIMIT, help="Result limit")
+
+    summarize_parser = subparsers.add_parser("summarize", help="Summarize query")
+    summarize_parser.add_argument("query", type=str, help="Query to summarize")
+    summarize_parser.add_argument("--limit", type=int, nargs="?", default=RESULT_LIMIT, help="Result limit")
 
     args = parser.parse_args()
 
     match args.command:
         case "rag":
-            rag_result = rag_command(args.query)
+            rag_result = rag_command(args.query, args.limit)
             print("Search Results:")
             for result in rag_result["results"]:
                 print(f"\t- {result["title"]}")
             
             print(f"\nRAG Response:")
             print(rag_result["response"])
+        case "summarize":
+            summarize_result = summarize_command(args.query, args.limit)
+            print("Search Results:")
+            for result in summarize_result["results"]:
+                print(f"\t- {result["title"]}")
+            
+            print(f"\nLLM Summary:")
+            print(summarize_result["response"])
         case _:
             parser.print_help()
 

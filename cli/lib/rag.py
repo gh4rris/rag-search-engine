@@ -1,5 +1,5 @@
 from lib.hybrid_search import HybridSearch
-from lib.search_utils import load_movies, RRF_K, LLM_MODEL, RESULT_LIMIT
+from lib.search_utils import load_movies, RRF_K, LLM_MODEL
 
 import os
 from typing import Any
@@ -11,8 +11,8 @@ load_dotenv()
 api_key = os.getenv("GEMINI_API_KEY")
 client = genai.Client(api_key=api_key)
 
-def augment_generation(query: str, documents: list[dict], limit: int=RESULT_LIMIT) -> str:
-    doc_list = [f"- {doc.get("title", "")}: {doc.get("document", "")[:200]}" for doc in documents[:limit]]
+def generate_answer(query: str, documents: list[dict]) -> str:
+    doc_list = [f"- {doc.get("title", "")}: {doc.get("document", "")[:200]}" for doc in documents]
     prompt = f"""
     Answer the question or provide information based on the provided documents. This should be tailored to Hoopla users. Hoopla is a movie streaming service.
 
@@ -28,16 +28,49 @@ def augment_generation(query: str, documents: list[dict], limit: int=RESULT_LIMI
         model=LLM_MODEL,
         contents=prompt
     )
-    return response.text
+    return (response.text or "").strip()
 
-def rag_command(query: str) -> dict[str, Any]:
+def generate_summarization(query: str, documents: list[dict]) -> str:
+    doc_list = [f"- {doc.get("title", "")}: {doc.get("document", "")[:200]}" for doc in documents]
+    prompt = f"""
+    Provide information useful to this query by synthesizing information from multiple search results in detail.
+    The goal is to provide comprehensive information so that users know what their options are.
+    Your response should be information-dense and concise, with several key pieces of information about the genre, plot, etc. of each movie.
+    This should be tailored to Hoopla users. Hoopla is a movie streaming service.
+    Query: {query}
+    Search Results:
+    {"\n".join(doc_list)}
+    Provide a comprehensive 3-4 sentence answer that combines information from multiple sources:
+    """
+
+    response = client.models.generate_content(
+        model=LLM_MODEL,
+        contents=prompt
+    )
+    return (response.text or "").strip()
+
+def rag_command(query: str, limit: int) -> dict[str, Any]:
     movies = load_movies()
     hybrid_search = HybridSearch(movies)
 
-    results = hybrid_search.rrf_search(query, RRF_K)
+    results = hybrid_search.rrf_search(query, RRF_K, limit)
     results.sort(key=lambda x: x["rrf_score"], reverse=True)
 
-    response = augment_generation(query, results)
+    response = generate_answer(query, results[:limit])
+
+    return {
+        "results": results,
+        "response": response
+    }
+
+def summarize_command(query: str, limit: int) -> dict[str, Any]:
+    movies = load_movies()
+    hybrid_search = HybridSearch(movies)
+
+    results = hybrid_search.rrf_search(query, RRF_K, limit)
+    results.sort(key=lambda x: x["rrf_score"], reverse=True)
+
+    response = generate_summarization(query, results[:limit])
 
     return {
         "results": results,
