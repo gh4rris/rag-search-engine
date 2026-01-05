@@ -85,7 +85,7 @@ class InvertedIndex:
                 {
                     "id": document["id"],
                     "title": document["title"],
-                    "document": document["description"][:DOCUMENT_PREVIEW_LENGTH],
+                    "document": document["description"],
                     "score": round(score, SCORE_PRECISION)
                 }
             )
