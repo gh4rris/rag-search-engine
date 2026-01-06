@@ -1,4 +1,4 @@
-from lib.search_utils import MODEL_NAME, CACHE, MAX_CHUNK_SIZE, SENTENCE_OVERLAP, load_movies
+from lib.search_utils import SEMANTIC_MODEL, CACHE, MAX_CHUNK_SIZE, SENTENCE_OVERLAP, load_movies
 
 import os
 import re
@@ -9,7 +9,7 @@ from sentence_transformers import SentenceTransformer
 
 
 class SemanticSearch:
-    def __init__(self, model_name: str=MODEL_NAME) -> None:
+    def __init__(self, model_name: str=SEMANTIC_MODEL) -> None:
         self.model = SentenceTransformer(model_name)
         self.embeddings: ndarray[ndarray] | None = None # array of embedded documents
         self.documents: list[dict] | None = None # list of documents

@@ -15,8 +15,10 @@ DOCUMENT_PREVIEW_LENGTH = 100
 ALPHA = 0.5
 LIMIT_MULTIPLIER = 500
 RRF_K = 60
-MODEL_NAME = "all-MiniLM-L6-v2"
+SEMANTIC_MODEL = "all-MiniLM-L6-v2"
 LLM_MODEL = "gemini-2.5-flash"
+CROSS_ENCODER_MODEL = "cross-encoder/ms-marco-TinyBERT-L2-v2"
+MULTIMODAL_MODEL = "clip-ViT-B-32"
 SEARCH_MULTIPLIER = 5
 
 ROOT_PATH = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))

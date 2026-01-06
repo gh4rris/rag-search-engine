@@ -1,4 +1,4 @@
-from lib.search_utils import load_movies, tokenize_text, CACHE, BM25_K1, BM25_B, DOCUMENT_PREVIEW_LENGTH, SCORE_PRECISION
+from lib.search_utils import load_movies, tokenize_text, CACHE, BM25_K1, BM25_B, SCORE_PRECISION
 
 import os
 import pickle

@@ -1,7 +1,6 @@
 from lib.multimodal import describe_command
 
 import argparse
-import mimetypes
 
 
 def main():

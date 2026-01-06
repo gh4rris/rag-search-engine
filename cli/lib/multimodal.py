@@ -1,16 +1,34 @@
-from lib.hybrid_search import HybridSearch
-from lib.search_utils import load_movies, RRF_K, LLM_MODEL
+from lib.search_utils import LLM_MODEL, MULTIMODAL_MODEL
 
 import os
 import mimetypes
 from typing import Any
+from numpy import ndarray
 from dotenv import load_dotenv
 from google import genai
+from PIL import Image
+from sentence_transformers import SentenceTransformer
 
 
 load_dotenv()
 api_key = os.getenv("GEMINI_API_KEY")
 client = genai.Client(api_key=api_key)
+
+class MultiModalSearch:
+    def __init__(self, model_name: str=MULTIMODAL_MODEL):
+        self.model = SentenceTransformer(model_name)
+
+    def embed_image(self, path: str) -> ndarray:
+        if not os.path.exists(path):
+            raise FileNotFoundError(f"Image file not found: {path}")
+        image = Image.open(path)
+        return self.model.encode([image])[0]
+    
+
+def verify_image_embedding(image_path: str) -> int:
+    multimodal = MultiModalSearch()
+    embedded_image = multimodal.embed_image(image_path)
+    return embedded_image.shape[0]
 
 
 def describe_command(image_path: str, query: str) -> dict[str, Any]:

@@ -1,4 +1,4 @@
-from lib.search_utils import LLM_MODEL
+from lib.search_utils import LLM_MODEL, CROSS_ENCODER_MODEL
 
 import os
 import time
@@ -73,7 +73,7 @@ def rerank_batch(query: str, documents: list[dict]) -> list[dict]:
 
 def rerank_cross_encoder(query: str, documents: list[dict]) -> list[dict]:
     pairs = [[query, f"{doc.get("title", "")} - {doc.get("document", "")}"] for doc in documents]
-    cross_encoder = CrossEncoder("cross-encoder/ms-marco-TinyBERT-L2-v2")
+    cross_encoder = CrossEncoder(CROSS_ENCODER_MODEL)
     scores = cross_encoder.predict(pairs)
     scored_docs = []
     for doc, score in zip(documents, scores):
